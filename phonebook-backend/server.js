@@ -1,5 +1,6 @@
 const express = require('express')
 const morgan = require('morgan')
+const cors = require('cors')
 
 const app = express()
 
@@ -26,10 +27,12 @@ let persons = [
   },
 ]
 
+app.use(express.static('build'))
+
+app.use(cors())
 app.use(express.json())
 
 morgan.token('body', (req, res) => JSON.stringify(req.body))
-
 app.use(
   morgan(':method :url :status :res[content-length] - :response-time ms :body')
 )
@@ -85,7 +88,7 @@ app.get('/info', (req, res) => {
   res.send(`Phonebook has info for ${persons.length} people <br> ${new Date()}`)
 })
 
-const port = 3000
+const port = process.env.PORT || 3001
 app.listen(port, () => {
   console.log(`Server is running at http://127.0.0.1:${port}`)
 })
