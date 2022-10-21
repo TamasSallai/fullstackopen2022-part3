@@ -88,7 +88,13 @@ app.put('/api/persons/:id', (req, res, next) => {
 })
 
 app.get('/info', (req, res) => {
-  res.send(`Phonebook has info for ${persons.length} people <br> ${new Date()}`)
+  Person.find({})
+    .then((result) => {
+      res.send(
+        `Phonebook has info for ${result.length} people <br> ${new Date()}`
+      )
+    })
+    .catch((error) => res.status(500).send({ error: error }))
 })
 
 const port = process.env.PORT
