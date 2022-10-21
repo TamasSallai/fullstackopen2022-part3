@@ -55,12 +55,34 @@ app.post('/api/persons', (req, res) => {
 })
 
 app.delete('/api/persons/:id', (req, res, next) => {
-  Person.findByIdAndDelete(req.params.id)
+  Person.findByIdAndRemove(req.params.id)
     .then((person) => {
       if (!person) {
         return res.status(404).end()
       }
       res.status(204).end()
+    })
+    .catch((error) => next(error))
+})
+
+app.put('/api/persons/:id', (req, res, next) => {
+  const body = req.body
+
+  if (!body.name || !body.number) {
+    return res.status(400).send({ error: 'name or number missing' })
+  }
+
+  const person = {
+    name: body.name,
+    number: body.number,
+  }
+
+  Person.findByIdAndUpdate(req.params.id, person, { new: true })
+    .then((updatedPerson) => {
+      if (!updatedPerson) {
+        return res.status(404).end()
+      }
+      res.send(updatedPerson)
     })
     .catch((error) => next(error))
 })

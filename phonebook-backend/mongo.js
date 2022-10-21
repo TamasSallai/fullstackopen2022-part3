@@ -14,7 +14,7 @@ if (process.argv.length === 4) {
   process.exit(1)
 }
 
-const url = `mongodb+srv://fullstackopen2022:${process.argv[2]}@cluster0.89srk3t.mongodb.net/phonebook?retryWrites=true&w=majority`
+const url = process.env.MONGO_URI
 
 const personSchema = mongoose.Schema({
   name: String,
