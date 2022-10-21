@@ -32,25 +32,25 @@ app.get('/api/persons/:id', (req, res, next) => {
     .catch((error) => next(error))
 })
 
-app.post('/api/persons', (req, res) => {
+app.post('/api/persons', (req, res, next) => {
   const body = req.body
 
-  if (!body.name || !body.number) {
-    return res.status(400).send({ error: 'name or number missing' })
-  }
+  Person.find({ name: body.name }).then((persons) => {
+    if (persons.length > 0) {
+      return res.status(400).send({ error: 'name must be unique' })
+    }
 
-  Person.find({ name: body.name }).then((result) => {
-    if (result.length > 0) {
-      res.status(400).send({ error: 'name must be unique' })
-    } else {
-      const person = new Person({
-        name: body.name,
-        number: body.number,
-      })
-      person.save().then((person) => {
+    const person = new Person({
+      name: body.name,
+      number: body.number,
+    })
+
+    person
+      .save()
+      .then((person) => {
         res.send(person)
       })
-    }
+      .catch((error) => next(error))
   })
 })
 
@@ -77,7 +77,11 @@ app.put('/api/persons/:id', (req, res, next) => {
     number: body.number,
   }
 
-  Person.findByIdAndUpdate(req.params.id, person, { new: true })
+  Person.findByIdAndUpdate(req.params.id, person, {
+    runValidators: true,
+    context: 'query',
+    new: true,
+  })
     .then((updatedPerson) => {
       if (!updatedPerson) {
         return res.status(404).end()
@@ -106,6 +110,8 @@ const errorHandler = (error, req, res, next) => {
   console.error(error.message)
   if (error.name === 'CastError') {
     return res.status(400).send({ error: 'malformatted id' })
+  } else if (error.name === 'ValidationError') {
+    return res.status(400).send({ error: error.message })
   }
 
   next(error)
